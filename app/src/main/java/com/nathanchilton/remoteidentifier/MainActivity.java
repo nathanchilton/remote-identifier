@@ -11,9 +11,11 @@ import android.media.MediaRecorder;
 
 import androidx.core.app.ActivityCompat;
 
+import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
@@ -23,6 +25,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.widget.EditText;
+import android.widget.Toast;
 
 //public class SoundDetectionActivity extends AppCompatActivity {
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private double initialThreshold = 700;
     private double threshold = initialThreshold;
 
+    TextToSpeech textToSpeech;
+    EditText identificationText;
+    Button testSpeech;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +53,29 @@ public class MainActivity extends AppCompatActivity {
         ((EditText)findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+        textToSpeech=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    textToSpeech.setLanguage(Locale.UK);
+                }
+            }
+        });
+
+         identificationText  = findViewById(R.id.identificationText);
+         testSpeech = findViewById(R.id.testSpeech);
+
+
+
+        testSpeech.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String toSpeak = identificationText.getText().toString();
+                Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
+                textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+            }
+        });
 
         findViewById(R.id.startButton).setOnClickListener(new View.OnClickListener() {
             @Override
