@@ -22,8 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:format24Hour="true"
-        android:timeZone="UTC"
+        android:format24Hour="yyyy-MMM-d kk:mm"
+        android:timeZone="CDT"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <TextView
