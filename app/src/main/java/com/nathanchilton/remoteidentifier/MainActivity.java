@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
     TextToSpeech textToSpeech;
     EditText identificationText;
+    TextView currentAmplitude;
     Button testSpeech;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,23 +50,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sound_detection);
 
         timestampTextView = findViewById(R.id.timestampTextView);
-        ((EditText)findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
+        ((EditText) findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
+        currentAmplitude = (TextView) findViewById(R.id.currentAmplitude);
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
-        textToSpeech=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
+                if (status != TextToSpeech.ERROR) {
                     textToSpeech.setLanguage(Locale.UK);
                 }
             }
         });
 
-         identificationText  = findViewById(R.id.identificationText);
-         testSpeech = findViewById(R.id.testSpeech);
-
-
+        identificationText = findViewById(R.id.identificationText);
+        testSpeech = findViewById(R.id.testSpeech);
 
         testSpeech.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,8 +141,6 @@ public class MainActivity extends AppCompatActivity {
         final EditText thresholdEditText = findViewById(R.id.thresholdEditText);
         threshold = Double.parseDouble(thresholdEditText.getText().toString());
 
-        TextView currentAmplitude = findViewById(R.id.currentAmplitude);
-
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -164,7 +161,8 @@ public class MainActivity extends AppCompatActivity {
                         if (amplitude > threshold) {
                             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                                     .format(new Date());
-                            timestampTextView.setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
+                            timestampTextView
+                                    .setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
@@ -177,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopRecording() {
         timestampTextView.setText("Stopped recording.");
+        currentAmplitude.setText("");
 
         if (mediaRecorder != null) {
             mediaRecorder.stop();
