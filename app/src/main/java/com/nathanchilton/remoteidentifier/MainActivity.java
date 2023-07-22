@@ -11,6 +11,8 @@ import android.media.MediaRecorder;
 
 import androidx.core.app.ActivityCompat;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.TextView;
 
@@ -20,16 +22,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import android.widget.EditText;
 
 //public class SoundDetectionActivity extends AppCompatActivity {
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private boolean permissionToRecordAccepted = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private String[] permissions = { Manifest.permission.RECORD_AUDIO };
 
     private MediaRecorder mediaRecorder;
     private TextView timestampTextView;
+    private double initialThreshold = 700;
+    private double threshold = initialThreshold;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sound_detection);
 
         timestampTextView = findViewById(R.id.timestampTextView);
+        ((EditText)findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -57,6 +64,29 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.startButton).setEnabled(true);
             }
         });
+
+        EditText thresholdEditText = findViewById(R.id.thresholdEditText);
+        thresholdEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Not used in this implementation
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Check if the input is a valid double and update the threshold value
+                try {
+                    threshold = Double.parseDouble(charSequence.toString());
+                } catch (NumberFormatException e) {
+                    threshold = 0.0; // Set a default threshold if parsing fails
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Not used in this implementation
+            }
+        });
     }
 
     @Override
@@ -72,13 +102,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void startRecording() {
         timestampTextView.setText("Started recording...");
 
         String fileName = "recording.3gp";
         File outputFile = new File(getExternalFilesDir(null), fileName);
-        String filePath = outputFile.getAbsolutePath();
+        final String filePath = outputFile.getAbsolutePath();
+
+        final EditText thresholdEditText = findViewById(R.id.thresholdEditText);
+        threshold = Double.parseDouble(thresholdEditText.getText().toString());
+
+        TextView currentAmplitude = findViewById(R.id.currentAmplitude);
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -96,9 +130,11 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     if (mediaRecorder != null) {
                         double amplitude = getAmplitude();
-                        if (amplitude > 700) {
-                            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-                            timestampTextView.setText(timestamp + "\nAmplitude: " + amplitude);
+                        currentAmplitude.setText("Current Amplitude: " + String.valueOf(amplitude));
+                        if (amplitude > threshold) {
+                            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                                    .format(new Date());
+                            timestampTextView.setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
@@ -109,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void stopRecording() {
         timestampTextView.setText("Stopped recording.");
 
@@ -119,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
             mediaRecorder = null;
         }
     }
-
 
     private double getAmplitude() {
         if (mediaRecorder != null) {

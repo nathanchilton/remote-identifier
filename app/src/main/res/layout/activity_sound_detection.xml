@@ -14,6 +14,19 @@
         android:textSize="20sp"
         tools:text="Timestamp" />
 
+    <TextView
+        android:id="@+id/currentAmplitude"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
+
+    <EditText
+        android:id="@+id/thresholdEditText"
+        android:singleLine="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter threshold for amplitude" />
+
     <Button
         android:id="@+id/startButton"
         android:layout_width="match_parent"
