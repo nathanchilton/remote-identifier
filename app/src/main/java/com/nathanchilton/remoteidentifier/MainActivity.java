@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder mediaRecorder;
     private TextView timestampTextView;
     private double initialThreshold = 700;
+    private final int DEFAULT_ANNOUNCEMENT_FREQUENCY = 15;
+    private int announcementFrequency = DEFAULT_ANNOUNCEMENT_FREQUENCY;
     private double threshold = initialThreshold;
 
     private long timeOfLastAnnouncement = 0;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextToSpeech textToSpeech;
     EditText identificationText;
+    EditText announcementFrequencyEditText;
     TextView currentAmplitude;
     Button testSpeech;
 
@@ -55,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         timestampTextView = findViewById(R.id.timestampTextView);
         ((EditText) findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
         currentAmplitude = (TextView) findViewById(R.id.currentAmplitude);
+
+        announcementFrequencyEditText = (EditText) findViewById(R.id.announcementFrequency);
+
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -175,6 +181,22 @@ public class MainActivity extends AppCompatActivity {
                             timestampTextView
                                     .setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
                             timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
+                        } else {
+                            // nobody is talking, so we can make an announcement, if appropriate
+                            // Check if the input is a valid double and update the threshold value
+                            announcementFrequency = DEFAULT_ANNOUNCEMENT_FREQUENCY;
+                            try {
+                                announcementFrequency = Integer.parseInt(announcementFrequencyEditText.toString());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Failed to parse value for announcementFrequency:\n" + e.getMessage());
+                                e.printStackTrace();
+                            }
+
+                            // if timeSinceLastAnnouncement > announcementFrequency
+                            // and timeOfLastSoundWhichExceededTheThreshold > timeOfLatestAnnouncement
+                            makeAnnouncement();
+
+
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
