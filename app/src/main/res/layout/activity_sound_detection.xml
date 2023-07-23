@@ -23,7 +23,6 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:format24Hour="yyyy-MMM-d kk:mm"
-        android:timeZone="CDT"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <TextView
@@ -42,6 +41,19 @@
         android:textSize="20sp"
         tools:text="Timestamp" />
 
+    <TextView
+        android:id="@+id/minutesAgo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/currentAmplitude"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Current Amplitude" />
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"> >
@@ -50,7 +62,7 @@
             android:id="@+id/timeSinceLastIDLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Time since last identification:" />
+            android:text="Minutes since last identification:" />
 
         <TextView
             android:id="@+id/timeSinceLastID"
@@ -58,15 +70,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
 
-            android:text="TextView"
             android:textAlignment="textEnd" />
     </RelativeLayout>
-
-    <TextView
-        android:id="@+id/currentAmplitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Current Amplitude" />
 
     <EditText
         android:id="@+id/thresholdEditText"

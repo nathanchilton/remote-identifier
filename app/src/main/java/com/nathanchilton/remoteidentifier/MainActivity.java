@@ -264,6 +264,8 @@ public class MainActivity extends AppCompatActivity {
                     if (mediaRecorder != null) {
                         double amplitude = getAmplitude();
                         currentAmplitude.setText("Current Amplitude: " + String.valueOf(amplitude));
+                        float minutesSinceLastAnnouncement = (float) ((System.currentTimeMillis()
+                                - timeOfLastAnnouncement) / 1000 / 60);
                         if (amplitude > threshold) {
                             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                                     .format(new Date());
@@ -272,10 +274,14 @@ public class MainActivity extends AppCompatActivity {
                             timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
                         } else {
                             // nobody is talking, so we can make an announcement, if appropriate
+                            TextView minutesAgo = (TextView) findViewById(R.id.minutesAgo);
+                            minutesAgo.setText("(" + String.valueOf(
+                                    (int) (System.currentTimeMillis() - timeOfLastSoundWhichExceededTheThreshold) / 1000
+                                            / 60)
+                                    + " minutes ago.)");
 
                             // if timeSinceLastAnnouncement > announcementFrequency
-                            float minutesSinceLastAnnouncement = (float) ((System.currentTimeMillis()
-                                    - timeOfLastAnnouncement) / 1000 / 60);
+
                             if ((minutesSinceLastAnnouncement > getAnnouncementFrequency())
                                     && (timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)) {
                                 makeAnnouncement();
