@@ -47,13 +47,13 @@
         android:layout_height="wrap_content"> >
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/timeSinceLastIDLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Time since last identification:" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/timeSinceLastID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
