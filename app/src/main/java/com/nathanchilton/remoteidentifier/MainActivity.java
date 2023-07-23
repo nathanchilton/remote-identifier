@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private double initialThreshold = 700;
     private double threshold = initialThreshold;
 
+    private long timeOfLastAnnouncement = 0;
+    private long timeOfLastSoundWhichExceededTheThreshold = 0;
+
     TextToSpeech textToSpeech;
     EditText identificationText;
     TextView currentAmplitude;
@@ -70,9 +73,7 @@ public class MainActivity extends AppCompatActivity {
         testSpeech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String toSpeak = identificationText.getText().toString();
-                Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
-                textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                makeAnnouncement();
             }
         });
 
@@ -116,6 +117,16 @@ public class MainActivity extends AppCompatActivity {
                 // Not used in this implementation
             }
         });
+    }
+
+    private void makeAnnouncement() {
+        String toSpeak = identificationText.getText().toString();
+        Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
+        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+
+        // reset the timeOfLastAnnouncement to the current time
+        timeOfLastAnnouncement = System.currentTimeMillis();
+
     }
 
     @Override
@@ -163,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
                                     .format(new Date());
                             timestampTextView
                                     .setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
+                            timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
