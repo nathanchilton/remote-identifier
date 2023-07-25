@@ -94,6 +94,12 @@
         android:hint="How often should I identify?" />
 
 
+    <Switch
+        android:id="@+id/timeAlignment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Align to multiples of interval:"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     <View
         android:id="@+id/divider"

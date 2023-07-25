@@ -17,6 +17,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private boolean permissionToRecordAccepted = false;
-    private String[] permissions = { Manifest.permission.RECORD_AUDIO };
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
 
     private MediaRecorder mediaRecorder;
     private TextView timestampTextView;
@@ -215,12 +216,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeAnnouncement() {
+        long justBeforeMakingTheAnnouncement = System.currentTimeMillis();
         String toSpeak = getIdentificationText();
         Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
         textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
 
         // reset the timeOfLastAnnouncement to the current time
         timeOfLastAnnouncement = System.currentTimeMillis();
+        timeOfLastSoundWhichExceededTheThreshold = justBeforeMakingTheAnnouncement;
     }
 
     @Override
@@ -280,16 +283,19 @@ public class MainActivity extends AppCompatActivity {
                                             / 60)
                                     + " minutes ago.)");
 
-                            // if timeSinceLastAnnouncement > announcementFrequency
 
-                            if ((minutesSinceLastAnnouncement > getAnnouncementFrequency())
-                                    && (timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)) {
-                                makeAnnouncement();
+                            if (timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement) {
+                                Switch alignment = findViewById(R.id.timeAlignment);
+                                if (alignment.isChecked()) {
+                                    if (((new Date().getMinutes()) % getAnnouncementFrequency() == 0) ||
+                                            (minutesSinceLastAnnouncement >= getAnnouncementFrequency())) {
+                                        makeAnnouncement();
+                                    }
+                                }
+                                TextView timeSinceLastIDTextView = (TextView) findViewById(R.id.timeSinceLastID);
+                                timeSinceLastIDTextView.setText(String.valueOf((int) minutesSinceLastAnnouncement));
+
                             }
-
-                            TextView timeSinceLastIDTextView = (TextView) findViewById(R.id.timeSinceLastID);
-                            timeSinceLastIDTextView.setText(String.valueOf((int) minutesSinceLastAnnouncement));
-
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
