@@ -1,33 +1,32 @@
 package com.nathanchilton.remoteidentifier;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
+import android.Manifest;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.MediaRecorder;
-
-import androidx.core.app.ActivityCompat;
-
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import android.widget.EditText;
-import android.widget.Toast;
 
 //public class SoundDetectionActivity extends AppCompatActivity {
 public class MainActivity extends AppCompatActivity {
@@ -239,6 +238,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void generateAndPlayTone(float toneFrequency, float durationSeconds) {
+        final int SAMPLE_RATE = 44100; // Standard audio sample rate
+        if (toneFrequency < 1)
+            toneFrequency = 440.0f;
+
+        int numSamples = Math.round(SAMPLE_RATE * durationSeconds);
+        double sample[] = new double[numSamples];
+        byte generatedSnd[] = new byte[2 * numSamples];
+
+        // Generate the tone
+        for (int i = 0; i < numSamples; ++i) {
+            sample[i] = Math.sin(2 * Math.PI * i / (SAMPLE_RATE / toneFrequency)); // 440Hz for example, you can change
+            // the frequency
+        }
+
+        // Convert the generated sample to bytes
+        int idx = 0;
+        for (final double dVal : sample) {
+            short val = (short) ((dVal * 32767)); // Convert to 16-bit PCM
+            generatedSnd[idx++] = (byte) (val & 0x00ff);
+            generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
+        }
+
+        // Play the generated sound
+        AudioTrack audioTrack = new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                generatedSnd.length,
+                AudioTrack.MODE_STATIC);
+        audioTrack.write(generatedSnd, 0, generatedSnd.length);
+        audioTrack.play();
+        audioTrack.release();
+    }
+
     private void startRecording() {
         timestampTextView.setText("Started recording...");
 
@@ -289,8 +324,9 @@ public class MainActivity extends AppCompatActivity {
                             if ((timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)
                                     &&
                                     ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
-                                            (alignment.isChecked() && (minuteOfHour % getAnnouncementFrequency() == 0)))
-                            ) {
+                                            (alignment.isChecked()
+                                                    && (minuteOfHour % getAnnouncementFrequency() == 0)))) {
+                                generateAndPlayTone(440.0f, 1.0f);
                                 makeAnnouncement();
                             }
 

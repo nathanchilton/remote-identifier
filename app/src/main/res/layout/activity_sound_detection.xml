@@ -86,13 +86,11 @@
         android:layout_height="wrap_content"
         android:hint="What should I say?" />
 
-
     <EditText
         android:id="@+id/announcementFrequency"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="How often should I identify?" />
-
 
     <Switch
         android:id="@+id/timeAlignment"
@@ -111,14 +109,14 @@
         android:id="@+id/startButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Start Recording" />
+        android:text="Start Listening" />
 
     <Button
         android:id="@+id/stopButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="Stop Recording" />
+        android:text="Stop Listening" />
 
     <Button
         android:id="@+id/testSpeech"
