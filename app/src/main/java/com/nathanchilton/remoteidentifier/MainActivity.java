@@ -283,19 +283,19 @@ public class MainActivity extends AppCompatActivity {
                                             / 60)
                                     + " minutes ago.)");
 
+                            int minuteOfHour = new Date().getMinutes();
+                            Switch alignment = findViewById(R.id.timeAlignment);
 
-                            if (timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement) {
-                                Switch alignment = findViewById(R.id.timeAlignment);
-                                if (alignment.isChecked()) {
-                                    if (((new Date().getMinutes()) % getAnnouncementFrequency() == 0) ||
-                                            (minutesSinceLastAnnouncement >= getAnnouncementFrequency())) {
-                                        makeAnnouncement();
-                                    }
-                                }
-                                TextView timeSinceLastIDTextView = (TextView) findViewById(R.id.timeSinceLastID);
-                                timeSinceLastIDTextView.setText(String.valueOf((int) minutesSinceLastAnnouncement));
-
+                            if ((timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)
+                                    &&
+                                    ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
+                                            (alignment.isChecked() && (minuteOfHour % getAnnouncementFrequency() == 0)))
+                            ) {
+                                makeAnnouncement();
                             }
+
+                            TextView timeSinceLastIDTextView = (TextView) findViewById(R.id.timeSinceLastID);
+                            timeSinceLastIDTextView.setText(String.valueOf((int) minutesSinceLastAnnouncement));
                         }
                         handler.postDelayed(this, 1000); // Check every second
                     }
