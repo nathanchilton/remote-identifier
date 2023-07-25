@@ -331,8 +331,8 @@ public class MainActivity extends AppCompatActivity {
 
                             int minuteOfHour = new Date().getMinutes();
                             Switch alignment = findViewById(R.id.timeAlignment);
-
-                            if ((timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)
+                            int announcementIntervalInMilliseconds = getAnnouncementFrequency() * 1000 * 60;
+                            if (((timeOfLastSoundWhichExceededTheThreshold + announcementIntervalInMilliseconds + 1) > timeOfLastAnnouncement)
                                     &&
                                     ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
                                             (alignment.isChecked()
