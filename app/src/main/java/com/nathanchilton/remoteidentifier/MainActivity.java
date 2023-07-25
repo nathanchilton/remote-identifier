@@ -1,14 +1,15 @@
 package com.nathanchilton.remoteidentifier;
 
-import android.content.pm.PackageManager;
-import android.content.SharedPreferences;
 import android.Manifest;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,32 +29,26 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-//public class SoundDetectionActivity extends AppCompatActivity {
 public class MainActivity extends AppCompatActivity {
 
-    private final String appName = "Remote Identifier"; // getString(R.string.app_name);
-
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    private boolean permissionToRecordAccepted = false;
+    private final String appName = "Remote Identifier"; // getString(R.string.app_name);
     private final String[] permissions = {Manifest.permission.RECORD_AUDIO};
-
-    private MediaRecorder mediaRecorder;
-    private TextView timestampTextView;
     private final int DEFAULT_ANNOUNCEMENT_FREQUENCY = 15;
     private final int DEFAULT_THRESHOLD = 700;
-
-    private long timeOfLastAnnouncement = 0;
-    private long timeOfLastSoundWhichExceededTheThreshold = 0;
-
     TextToSpeech textToSpeech;
-
     EditText thresholdEditText;
     EditText identificationText;
     EditText announcementFrequencyEditText;
-
     TextView currentAmplitude;
     SharedPreferences sharedPreferences;
+    private boolean permissionToRecordAccepted = false;
+    private MediaRecorder mediaRecorder;
+    private TextView timestampTextView;
+    private long timeOfLastAnnouncement = 0;
+    private long timeOfLastSoundWhichExceededTheThreshold = 0;
     private AudioTrack audioTrack;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +68,13 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
         loadSettings();
+
+        // Obtain a WakeLock to keep the CPU running even when the screen is off
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (powerManager != null) {
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    "SoundDetectionActivity:WakeLockTag");
+        }
 
         textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -295,6 +297,11 @@ public class MainActivity extends AppCompatActivity {
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
+            // Acquire the WakeLock before starting the recording
+            if (wakeLock != null && !wakeLock.isHeld()) {
+                wakeLock.acquire();
+            }
+
             mediaRecorder.prepare();
             mediaRecorder.start();
 
@@ -354,6 +361,11 @@ public class MainActivity extends AppCompatActivity {
         currentAmplitude.setText("");
 
         if (mediaRecorder != null) {
+            // Release the WakeLock when stopping the recording
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+
             mediaRecorder.stop();
             mediaRecorder.release();
             mediaRecorder = null;
