@@ -106,7 +106,28 @@
             android:inputType="number"
             android:singleLine="true"
             android:textAlignment="textEnd"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/announcementFrequencyLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Announcement Interval (minutes):" />
+
+        <EditText
+            android:id="@+id/announcementFrequency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:textAlignment="textEnd"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        />
 
     </RelativeLayout>
 
@@ -122,33 +143,12 @@
         android:layout_height="wrap_content"
         android:hint="What should I say?" />
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/announcementFrequencyLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Announcement Interval (minutes):" />
-
-        <EditText
-            android:id="@+id/announcementFrequency"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:textAlignment="textEnd"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        />
-
-    </RelativeLayout>
-
     <Switch
         android:id="@+id/timeAlignment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Align to multiples of interval:"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <Switch
         android:id="@+id/voxTone"
