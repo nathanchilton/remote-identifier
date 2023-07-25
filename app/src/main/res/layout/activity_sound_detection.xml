@@ -38,7 +38,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textSize="20sp"
         tools:text="Timestamp" />
 
     <TextView
@@ -98,6 +97,12 @@
         android:layout_height="wrap_content"
         android:text="Align to multiples of interval:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <Switch
+        android:id="@+id/voxTone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Trigger VOX with tone:" />
 
     <View
         android:id="@+id/divider"

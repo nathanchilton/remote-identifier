@@ -35,16 +35,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private boolean permissionToRecordAccepted = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private final String[] permissions = {Manifest.permission.RECORD_AUDIO};
 
     private MediaRecorder mediaRecorder;
     private TextView timestampTextView;
-    private double initialThreshold = 700;
     private final int DEFAULT_ANNOUNCEMENT_FREQUENCY = 15;
     private final int DEFAULT_THRESHOLD = 700;
-
-    private float announcementFrequency = DEFAULT_ANNOUNCEMENT_FREQUENCY;
-    // private int threshold = DEFAULT_THRESHOLD;
 
     private long timeOfLastAnnouncement = 0;
     private long timeOfLastSoundWhichExceededTheThreshold = 0;
@@ -57,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView currentAmplitude;
     SharedPreferences sharedPreferences;
+    private AudioTrack audioTrack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,12 +63,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sound_detection);
 
         timestampTextView = findViewById(R.id.timestampTextView);
-        ((EditText) findViewById(R.id.thresholdEditText)).setText(String.valueOf(initialThreshold));
+        ((EditText) findViewById(R.id.thresholdEditText)).setText(String.valueOf(DEFAULT_THRESHOLD));
 
-        currentAmplitude = (TextView) findViewById(R.id.currentAmplitude);
-        identificationText = (EditText) findViewById(R.id.identificationText);
-        announcementFrequencyEditText = (EditText) findViewById(R.id.announcementFrequency);
-        thresholdEditText = (EditText) findViewById(R.id.thresholdEditText);
+        currentAmplitude = findViewById(R.id.currentAmplitude);
+        identificationText = findViewById(R.id.identificationText);
+        announcementFrequencyEditText = findViewById(R.id.announcementFrequency);
+        thresholdEditText = findViewById(R.id.thresholdEditText);
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -90,7 +87,11 @@ public class MainActivity extends AppCompatActivity {
         testSpeech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                makeAnnouncement();
+                try {
+                    makeAnnouncement();
+                } catch (InterruptedException e) {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -176,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         announcementFrequencyEditText.setText(String.valueOf(announcementFrequency));
 
         String identificationTextString = sharedPreferences.getString("identificationText", "");
-        identificationText.setText(String.valueOf(identificationTextString));
+        identificationText.setText(identificationTextString);
     }
 
     public void saveSettings() {
@@ -214,8 +215,16 @@ public class MainActivity extends AppCompatActivity {
         return returnValue;
     }
 
-    private void makeAnnouncement() {
+    private void makeAnnouncement() throws InterruptedException {
         long justBeforeMakingTheAnnouncement = System.currentTimeMillis();
+
+        // If the voxTone switch is enabled, play a tone of durationSeconds
+        if (((Switch) findViewById(R.id.voxTone)).isChecked()) {
+            float durationSeconds = 0.5f;
+            generateAndPlayTone(440.0f, durationSeconds);
+            Thread.sleep((long) (durationSeconds * 1000));
+        }
+
         String toSpeak = getIdentificationText();
         Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
         textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
@@ -228,29 +237,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_RECORD_AUDIO_PERMISSION:
-                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                break;
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
         }
         if (!permissionToRecordAccepted) {
             finish();
         }
     }
 
-    private void generateAndPlayTone(float toneFrequency, float durationSeconds) {
+    private void generateAndPlayTone(float toneFrequency, float durationSeconds) throws InterruptedException {
         final int SAMPLE_RATE = 44100; // Standard audio sample rate
         if (toneFrequency < 1)
             toneFrequency = 440.0f;
 
         int numSamples = Math.round(SAMPLE_RATE * durationSeconds);
-        double sample[] = new double[numSamples];
-        byte generatedSnd[] = new byte[2 * numSamples];
+        double[] sample = new double[numSamples];
+        byte[] generatedSnd = new byte[2 * numSamples];
 
         // Generate the tone
         for (int i = 0; i < numSamples; ++i) {
-            sample[i] = Math.sin(2 * Math.PI * i / (SAMPLE_RATE / toneFrequency)); // 440Hz for example, you can change
-            // the frequency
+            sample[i] = Math.sin(2 * Math.PI * i / (SAMPLE_RATE / toneFrequency));
         }
 
         // Convert the generated sample to bytes
@@ -262,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Play the generated sound
-        AudioTrack audioTrack = new AudioTrack(
+        audioTrack = new AudioTrack(
                 AudioManager.STREAM_MUSIC,
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_OUT_MONO,
@@ -271,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
                 AudioTrack.MODE_STATIC);
         audioTrack.write(generatedSnd, 0, generatedSnd.length);
         audioTrack.play();
-        audioTrack.release();
     }
 
     private void startRecording() {
@@ -301,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (mediaRecorder != null) {
                         double amplitude = getAmplitude();
-                        currentAmplitude.setText("Current Amplitude: " + String.valueOf(amplitude));
+                        currentAmplitude.setText("Current Amplitude: " + amplitude);
                         float minutesSinceLastAnnouncement = (float) ((System.currentTimeMillis()
                                 - timeOfLastAnnouncement) / 1000 / 60);
                         if (amplitude > threshold) {
@@ -312,10 +317,9 @@ public class MainActivity extends AppCompatActivity {
                             timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
                         } else {
                             // nobody is talking, so we can make an announcement, if appropriate
-                            TextView minutesAgo = (TextView) findViewById(R.id.minutesAgo);
-                            minutesAgo.setText("(" + String.valueOf(
-                                    (int) (System.currentTimeMillis() - timeOfLastSoundWhichExceededTheThreshold) / 1000
-                                            / 60)
+                            TextView minutesAgo = findViewById(R.id.minutesAgo);
+                            minutesAgo.setText("(" + (int) (System.currentTimeMillis() - timeOfLastSoundWhichExceededTheThreshold) / 1000
+                                    / 60
                                     + " minutes ago.)");
 
                             int minuteOfHour = new Date().getMinutes();
@@ -326,11 +330,14 @@ public class MainActivity extends AppCompatActivity {
                                     ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
                                             (alignment.isChecked()
                                                     && (minuteOfHour % getAnnouncementFrequency() == 0)))) {
-                                generateAndPlayTone(440.0f, 1.0f);
-                                makeAnnouncement();
+                                try {
+                                    makeAnnouncement();
+                                } catch (InterruptedException e) {
+                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
                             }
 
-                            TextView timeSinceLastIDTextView = (TextView) findViewById(R.id.timeSinceLastID);
+                            TextView timeSinceLastIDTextView = findViewById(R.id.timeSinceLastID);
                             timeSinceLastIDTextView.setText(String.valueOf((int) minutesSinceLastAnnouncement));
                         }
                         handler.postDelayed(this, 1000); // Check every second
@@ -358,5 +365,14 @@ public class MainActivity extends AppCompatActivity {
             return mediaRecorder.getMaxAmplitude();
         }
         return 0;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (audioTrack != null) {
+            audioTrack.release();
+            audioTrack = null;
+        }
     }
 }
