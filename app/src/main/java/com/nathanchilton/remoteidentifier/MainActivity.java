@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     EditText identificationText;
     EditText announcementFrequencyEditText;
     TextView currentAmplitude;
+    TextView soundHeardSinceLastId;
     SharedPreferences sharedPreferences;
     private boolean permissionToRecordAccepted = false;
     private MediaRecorder mediaRecorder;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         identificationText = findViewById(R.id.identificationText);
         announcementFrequencyEditText = findViewById(R.id.announcementFrequency);
         thresholdEditText = findViewById(R.id.thresholdEditText);
+        soundHeardSinceLastId = findViewById(R.id.soundHeardSinceLastId);
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -120,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 saveSettings();
-                // loadSettings();
             }
 
             @Override
@@ -138,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 saveSettings();
-                // loadSettings();
             }
 
             @Override
@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 saveSettings();
-                // loadSettings();
             }
 
             @Override
@@ -320,8 +319,9 @@ public class MainActivity extends AppCompatActivity {
                             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                                     .format(new Date());
                             timestampTextView
-                                    .setText(timestamp + "\nAmplitude: " + amplitude + "\nThreshold: " + threshold);
+                                    .setText(timestamp + "\nAmplitude: " + amplitude + "\tThreshold: " + threshold);
                             timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
+                            soundHeardSinceLastId.setText("Yes");
                         } else {
                             // nobody is talking, so we can make an announcement, if appropriate
                             TextView minutesAgo = findViewById(R.id.minutesAgo);
@@ -339,6 +339,7 @@ public class MainActivity extends AppCompatActivity {
                                                     && (minuteOfHour % getAnnouncementFrequency() == 0)))) {
                                 try {
                                     makeAnnouncement();
+                                    soundHeardSinceLastId.setText("No");
                                 } catch (InterruptedException e) {
                                     Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
