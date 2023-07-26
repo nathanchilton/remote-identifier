@@ -1,12 +1,14 @@
 package com.nathanchilton.remoteidentifier;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -32,6 +34,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static final int SERVICE_REQUEST_CODE = 101;
     private final String appName = "Remote Identifier"; // getString(R.string.app_name);
     private final String[] permissions = {Manifest.permission.RECORD_AUDIO};
     private final int DEFAULT_ANNOUNCEMENT_FREQUENCY = 15;
@@ -103,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startRecording();
+                startForegroundService();
                 findViewById(R.id.stopButton).setEnabled(true);
                 findViewById(R.id.startButton).setEnabled(false);
             }
@@ -112,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 stopRecording();
+                stopForegroundService();
                 findViewById(R.id.stopButton).setEnabled(false);
                 findViewById(R.id.startButton).setEnabled(true);
             }
@@ -332,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
                             int minuteOfHour = new Date().getMinutes();
                             Switch alignment = findViewById(R.id.timeAlignment);
 
-                            if ((timeOfLastSoundWhichExceededTheThreshold > timeOfLastAnnouncement)
+                            if (((timeOfLastSoundWhichExceededTheThreshold - 2500) > timeOfLastAnnouncement)
                                     &&
                                     ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
                                             (alignment.isChecked()
@@ -387,5 +392,19 @@ public class MainActivity extends AppCompatActivity {
             audioTrack.release();
             audioTrack = null;
         }
+    }
+
+    private void startForegroundService() {
+        Intent serviceIntent = new Intent(this, SoundDetectionService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    private void stopForegroundService() {
+        Intent serviceIntent = new Intent(this, SoundDetectionService.class);
+        stopService(serviceIntent);
     }
 }
