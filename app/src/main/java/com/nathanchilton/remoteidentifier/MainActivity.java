@@ -338,11 +338,15 @@ public class MainActivity extends AppCompatActivity {
                             int minuteOfHour = new Date().getMinutes();
                             Switch alignment = findViewById(R.id.timeAlignment);
 
-                            if (((timeOfLastSoundWhichExceededTheThreshold - 2500) > timeOfLastAnnouncement)
-                                    &&
-                                    ((minutesSinceLastAnnouncement >= getAnnouncementFrequency()) ||
-                                            (alignment.isChecked()
-                                                    && (minuteOfHour % getAnnouncementFrequency() == 0)))) {
+                            // if the last sound heard was at least two seconds ago
+                            if (((System.currentTimeMillis() - 2000) > timeOfLastSoundWhichExceededTheThreshold)
+                                    // and it has been at least one minute since the last announcement
+                                    && ((timeOfLastSoundWhichExceededTheThreshold - 60 * 1000) > timeOfLastAnnouncement)
+                                    // and the number of minutes specified in the "interval" has elapsed
+                                    && ((minutesSinceLastAnnouncement >= getAnnouncementFrequency())
+                                    // or the "alignment" option is enabled and the current minute is a multiple of the "interval"
+                                    || (alignment.isChecked()
+                                    && (minuteOfHour % getAnnouncementFrequency() == 0)))) {
                                 try {
                                     makeAnnouncement();
                                     soundHeardSinceLastId.setText("No");
