@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
@@ -83,8 +84,18 @@ public class SoundDetectionService extends Service {
 
         // Create the notification
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0);
+
+        PendingIntent pendingIntent;
+        int requestCode = 42;
+
+        // Create the PendingIntent using the appropriate flag based on the API level
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Use FLAG_IMMUTABLE for Android S and above
+            pendingIntent = PendingIntent.getForegroundService(this, requestCode, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            // For older versions, use the default flag
+            pendingIntent = PendingIntent.getService(this, requestCode, notificationIntent, 0);
+        }
 
         return new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Sound Detection Service")

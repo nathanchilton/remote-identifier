@@ -1,6 +1,7 @@
 package com.nathanchilton.remoteidentifier;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -396,15 +397,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void startForegroundService() {
         Intent serviceIntent = new Intent(this, SoundDetectionService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
+        PendingIntent pendingIntent;
+        int requestCode = 42;
+
+        // Create the PendingIntent using the appropriate flag based on the API level
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Use FLAG_IMMUTABLE for Android S and above
+            pendingIntent = PendingIntent.getForegroundService(this, requestCode, serviceIntent, PendingIntent.FLAG_IMMUTABLE);
         } else {
-            startService(serviceIntent);
+            // For older versions, use the default flag
+            pendingIntent = PendingIntent.getService(this, requestCode, serviceIntent, 0);
+        }
+
+        // Use the PendingIntent to start the foreground service
+        try {
+            pendingIntent.send();
+        } catch (PendingIntent.CanceledException e) {
+            e.printStackTrace();
         }
     }
+
 
     private void stopForegroundService() {
         Intent serviceIntent = new Intent(this, SoundDetectionService.class);
         stopService(serviceIntent);
     }
+
 }
