@@ -18,7 +18,7 @@ This identification is normally handled by a repeater controller, but low cost r
 ## The purpose of this application
 It occurred to me that it might be possible to create a simple solution to this problem.  Instead of connecting a real repeater controller, what if a separate device, in range of the repeater, could listen for traffic on the frequency and use text-to-speech to transmit a message over the air, on a specific interval, when the repeater is in use.
 
-So, I created an Android application to perform this function.  The Android device needs to be connected to a radio which can be voice activated.  For instance, the Android phone could be connected to an HT with VOX enabled, using a BTECH APRS-K1 cable.
+So, I created an Android application to perform this function.  The Android device needs to be connected to a radio which can be voice activated.  For instance, the Android phone could be connected to an HT with VOX enabled (like a Baofeng UV-5R/UV-82 or a BTECH GMRS-V1/2), using a BTECH APRS-K1 cable.  The app listens to any traffic which comes through the radio.  When appropriate, the app uses the Android device's text-to-speech capability to produce sound, which the VOX-enabled HT will transmit over the air.  The repeater will hear this transmission and repeat it.  It would not be as reliable as a controller which is physically connected to the repeater, but it should work most of the time, and it could be located anywhere within range of the repeater.
 
 I designed the application to have an adjustable interval for transmitting.  For an amateur radio repeater, you can set it to identify every 10 minutes, and you can set it to identify every 15 minutes for a GMRS repeater.
 
