@@ -3,6 +3,13 @@
 # remote-identifier
 An Android App to Transmit a Repeater's Call Sign From a Remote Radio
 
+## TLDR
+An Android device, running this app, connected to a VOX-enabled HT using something like a BTECH APRS-K1, could perform the identification function for a repeater that does not have a controller, such as a:
+- cheap crossband repeater made from two HTs
+- Retevis RT97(S) Portable GMRS/Amateur Repeater
+
+This could also be used as a temporary solution while a repeater's controller is being repaired.
+
 ## Background
 Amateur radio repeaters are required to identify themselves every 10 minutes when in use.  GMRS repeaters are also required to identify themselves when in use (every 15 minutes), unless that repeater is only being used exclusively by one family (using a single call sign) and all members of the family are identifying their transmissions every 15 minutes.
 
