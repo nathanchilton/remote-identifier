@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private long timeOfLastSoundWhichExceededTheThreshold = 0;
     private AudioTrack audioTrack;
     private PowerManager.WakeLock wakeLock;
+    int ONE_THOUSAND_MILLISECONDS = 1000;
+    int THIRTY_SECONDS = 30 * ONE_THOUSAND_MILLISECONDS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -227,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
 
         // If the voxTone switch is enabled, play a tone of durationSeconds
         if (((Switch) findViewById(R.id.voxTone)).isChecked()) {
-            float durationSeconds = 0.5f;
+            float durationSeconds = 1.0f;
             generateAndPlayTone(440.0f, durationSeconds);
             Thread.sleep((long) (durationSeconds * 1000));
         }
@@ -322,12 +324,17 @@ public class MainActivity extends AppCompatActivity {
                         float minutesSinceLastAnnouncement = (float) ((System.currentTimeMillis()
                                 - timeOfLastAnnouncement) / 1000 / 60);
                         if (amplitude > threshold) {
-                            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                                    .format(new Date());
-                            timestampTextView
-                                    .setText(timestamp + "\nAmplitude: " + amplitude + "\tThreshold: " + threshold);
-                            timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
-                            soundHeardSinceLastId.setText("Yes");
+                            // ignore sounds for 30 seconds after the last announcement
+                            // (so the repeater's squelch tail is not interpreted as another transmission)
+
+                            if ((System.currentTimeMillis() - timeOfLastAnnouncement) > THIRTY_SECONDS) {
+                                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                                        .format(new Date());
+                                timestampTextView
+                                        .setText(timestamp + "\nAmplitude: " + amplitude + "\tThreshold: " + threshold);
+                                timeOfLastSoundWhichExceededTheThreshold = System.currentTimeMillis();
+                                soundHeardSinceLastId.setText("Yes");
+                            }
                         } else {
                             // nobody is talking, so we can make an announcement, if appropriate
                             TextView minutesAgo = findViewById(R.id.minutesAgo);
@@ -338,8 +345,8 @@ public class MainActivity extends AppCompatActivity {
                             int minuteOfHour = new Date().getMinutes();
                             Switch alignment = findViewById(R.id.timeAlignment);
 
-                            // if the last sound heard was at least two seconds ago
-                            if (((System.currentTimeMillis() - 2000) > timeOfLastSoundWhichExceededTheThreshold)
+                            // if the last sound heard was at least 1.5 seconds ago
+                            if (((System.currentTimeMillis() - 1500) > timeOfLastSoundWhichExceededTheThreshold)
                                     // and it has been at least one minute since the last announcement
                                     && ((timeOfLastSoundWhichExceededTheThreshold - 60 * 1000) > timeOfLastAnnouncement)
                                     // and the number of minutes specified in the "interval" has elapsed
