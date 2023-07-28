@@ -46,7 +46,11 @@ public class MainActivity extends AppCompatActivity {
     EditText announcementFrequencyEditText;
     TextView currentAmplitude;
     TextView soundHeardSinceLastId;
+    Switch voxTone;
+    Switch timeAlignment;
     SharedPreferences sharedPreferences;
+    int ONE_THOUSAND_MILLISECONDS = 1000;
+    int THIRTY_SECONDS = 30 * ONE_THOUSAND_MILLISECONDS;
     private boolean permissionToRecordAccepted = false;
     private MediaRecorder mediaRecorder;
     private TextView timestampTextView;
@@ -54,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private long timeOfLastSoundWhichExceededTheThreshold = 0;
     private AudioTrack audioTrack;
     private PowerManager.WakeLock wakeLock;
-    int ONE_THOUSAND_MILLISECONDS = 1000;
-    int THIRTY_SECONDS = 30 * ONE_THOUSAND_MILLISECONDS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         announcementFrequencyEditText = findViewById(R.id.announcementFrequency);
         thresholdEditText = findViewById(R.id.thresholdEditText);
         soundHeardSinceLastId = findViewById(R.id.soundHeardSinceLastId);
+        timeAlignment = findViewById(R.id.timeAlignment);
+        voxTone = findViewById(R.id.voxTone);
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -176,6 +180,20 @@ public class MainActivity extends AppCompatActivity {
                 // Not used in this implementation
             }
         });
+
+        timeAlignment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveSettings();
+            }
+        });
+
+        voxTone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveSettings();
+            }
+        });
     }
 
     public void loadSettings() {
@@ -187,6 +205,9 @@ public class MainActivity extends AppCompatActivity {
 
         String identificationTextString = sharedPreferences.getString("identificationText", "");
         identificationText.setText(identificationTextString);
+
+        voxTone.setChecked(sharedPreferences.getBoolean("voxTone", false));
+        timeAlignment.setChecked(sharedPreferences.getBoolean("timeAlignment", false));
     }
 
     public void saveSettings() {
@@ -194,6 +215,9 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt("threshold", getThreshold());
         editor.putInt("announcementFrequency", getAnnouncementFrequency());
         editor.putString("identificationText", getIdentificationText());
+        editor.putBoolean("voxTone", voxTone.isChecked());
+        editor.putBoolean("timeAlignment", timeAlignment.isChecked());
+
         editor.apply();
     }
 
@@ -428,10 +452,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void stopForegroundService() {
         Intent serviceIntent = new Intent(this, SoundDetectionService.class);
         stopService(serviceIntent);
     }
-
 }
