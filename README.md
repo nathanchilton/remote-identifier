@@ -5,8 +5,9 @@ An Android App to Transmit a Repeater's Call Sign From a Remote Radio
 
 ## TLDR
 An Android device, running this app, connected to a VOX-enabled HT using something like a BTECH APRS-K1, could perform the identification function for a repeater that does not have a controller, such as a:
-- cheap crossband repeater made from two HTs
 - Retevis RT97(S) Portable GMRS/Amateur Repeater
+- cheap crossband repeater made from two HTs
+
 
 This could also be used as a temporary solution while a repeater's controller is being repaired.
 
