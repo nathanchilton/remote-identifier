@@ -153,14 +153,14 @@
         android:layout_height="wrap_content"
         android:hint="What should I say?" />
 
-    <Switch
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/timeAlignment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Align to multiples of interval:"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
-    <Switch
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/voxTone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

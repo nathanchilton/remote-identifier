@@ -19,7 +19,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Switch;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
     EditText announcementFrequencyEditText;
     TextView currentAmplitude;
     TextView soundHeardSinceLastId;
-    Switch voxTone;
-    Switch timeAlignment;
+    MaterialSwitch voxTone;
+    MaterialSwitch timeAlignment;
     SharedPreferences sharedPreferences;
     int ONE_THOUSAND_MILLISECONDS = 1000;
     int THIRTY_SECONDS = 30 * ONE_THOUSAND_MILLISECONDS;
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         long justBeforeMakingTheAnnouncement = System.currentTimeMillis();
 
         // If the voxTone switch is enabled, play a tone of durationSeconds
-        if (((Switch) findViewById(R.id.voxTone)).isChecked()) {
+        if (((MaterialSwitch) findViewById(R.id.voxTone)).isChecked()) {
             float durationSeconds = 1.0f;
             generateAndPlayTone(440.0f, durationSeconds);
             Thread.sleep((long) (durationSeconds * 1000));
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                                     + " minutes ago.)");
 
                             int minuteOfHour = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE);
-                            Switch alignment = findViewById(R.id.timeAlignment);
+                            MaterialSwitch alignment = findViewById(R.id.timeAlignment);
 
                             // if the last sound heard was at least 1.5 seconds ago
                             if (((System.currentTimeMillis() - 1500) > timeOfLastSoundWhichExceededTheThreshold)
