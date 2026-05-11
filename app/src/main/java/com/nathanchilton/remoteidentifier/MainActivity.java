@@ -37,7 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int SERVICE_REQUEST_CODE = 101;
     private final String appName = "Remote Identifier"; // getString(R.string.app_name);
-    private final String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private final String[] permissions = Build.VERSION.SDK_INT >= 33
+            ? new String[]{Manifest.permission.RECORD_AUDIO, "android.permission.POST_NOTIFICATIONS"}
+            : new String[]{Manifest.permission.RECORD_AUDIO};
     private final int DEFAULT_ANNOUNCEMENT_FREQUENCY = 15;
     private final int DEFAULT_THRESHOLD = 700;
     TextToSpeech textToSpeech;
@@ -260,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
 
         String toSpeak = getIdentificationText();
         Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
-        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
 
         // reset the timeOfLastAnnouncement to the current time
         timeOfLastAnnouncement = System.currentTimeMillis();
@@ -301,13 +303,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Play the generated sound
-        audioTrack = new AudioTrack(
-                AudioManager.STREAM_MUSIC,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                generatedSnd.length,
-                AudioTrack.MODE_STATIC);
+        audioTrack = new AudioTrack.Builder()
+                .setAudioFormat(new AudioFormat.Builder()
+                        .setSampleRate(SAMPLE_RATE)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .build())
+                .setBufferSizeInBytes(generatedSnd.length)
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .build();
         audioTrack.write(generatedSnd, 0, generatedSnd.length);
         audioTrack.play();
     }
@@ -321,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
 
         final EditText thresholdEditText = findViewById(R.id.thresholdEditText);
 
-        mediaRecorder = new MediaRecorder();
+        mediaRecorder = new MediaRecorder(this);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mediaRecorder.setOutputFile(filePath);
@@ -336,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
             mediaRecorder.prepare();
             mediaRecorder.start();
 
-            final Handler handler = new Handler();
+            final Handler handler = new Handler(getMainLooper());
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -366,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
                                     / 60
                                     + " minutes ago.)");
 
-                            int minuteOfHour = new Date().getMinutes();
+                            int minuteOfHour = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE);
                             Switch alignment = findViewById(R.id.timeAlignment);
 
                             // if the last sound heard was at least 1.5 seconds ago

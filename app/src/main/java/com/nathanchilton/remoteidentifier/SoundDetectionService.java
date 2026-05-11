@@ -52,7 +52,7 @@ public class SoundDetectionService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopForeground(true);
+        stopForeground(STOP_FOREGROUND_REMOVE);
         releaseWakeLock();
         // Stop recording audio here
         // Add the audio recording stop logic here
